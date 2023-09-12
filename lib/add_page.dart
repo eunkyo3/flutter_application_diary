@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class AddPage extends StatefulWidget {
@@ -12,7 +15,6 @@ class _AddPageState extends State<AddPage> {
   // var controller1 = TextEditingController();
   // var controller2 = TextEditingController();
   String filePath = '';
-  // _AdPageState({required this.filePath});
   List<TextEditingController> controllers = [
     TextEditingController(),
     TextEditingController(),
@@ -25,6 +27,31 @@ class _AddPageState extends State<AddPage> {
     filePath = widget.filePath;
   }
 
+  Future<bool> fileSave() async {
+    try {
+      File file = File(filePath);
+      List<dynamic> dataList = []; // 기존의 파일데이터를 읽어와서 저장할 목적
+      var data = {
+        'title': controllers[0].text,
+        'contents': controllers[1].text,
+      };
+
+      // 기존에 파일이 있는 경우
+      if (file.existsSync()) {
+        var fileContents = await file.readAsString();
+        dataList = jsonDecode(fileContents) as List<dynamic>;
+      }
+      // 내가 방금 쓴 글을 추가해야함
+      dataList.add(data);
+      var jsondata = jsonEncode(dataList); // 변수 map을 다시 json으로 변환
+      var res = await file.writeAsString(jsondata);
+      return true;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,14 +61,14 @@ class _AddPageState extends State<AddPage> {
       ),
       body: Form(
         child: Padding(
-          padding: const EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(12.0),
           child: Column(
             children: [
               TextFormField(
                 controller: controllers[0],
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  label: Text('title'),
+                  label: Text('제목'),
                 ),
               ),
               const SizedBox(
@@ -54,17 +81,21 @@ class _AddPageState extends State<AddPage> {
                   maxLines: 10,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
-                    label: Text('contents'),
+                    label: Text('내용'),
                   ),
                 ),
               ),
               ElevatedButton(
-                  onPressed: () {
-                    var title = controllers[0].text;
-                    print(title);
+                onPressed: () async {
+                  var result = await fileSave(); // 저장이 잘 되었다면 T, 안되었다면 F
+                  if (result == true) {
                     Navigator.pop(context, 'ok');
-                  },
-                  child: const Text('저장'))
+                  } else {
+                    print('저장실패입니다.');
+                  }
+                },
+                child: const Text('저장'),
+              )
             ],
           ),
         ),

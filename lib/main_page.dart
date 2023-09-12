@@ -1,5 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_application_diary/add_page.dart';
+import 'package:flutter_diary/add_page.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -27,21 +31,98 @@ class Main extends StatefulWidget {
 }
 
 class _MainState extends State<Main> {
+  Directory? directory;
+  String filePath = 'msg.json';
+  String fileName = '';
+  dynamic myList = const Text('준비');
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // 비동기를 바로 쓸 수 없음
+    getPath().then((value) {
+      showList();
+    });
+  }
+
+  Future<void> getPath() async {
+    directory = await getApplicationSupportDirectory(); // 모든 플랫폼에서 사용 가능하기 때문에
+    if (directory != null) {
+      var fileName = 'diary.json';
+      filePath = '${directory!.path}/$fileName'; // 경로/경로/diary.json
+      print(filePath);
+    }
+  }
+
+  Future<void> showList() async {
+    try {
+      var file = File(filePath);
+      if (file.existsSync()) {
+        setState(() {
+          myList = FutureBuilder(
+              future: file.readAsString(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  var d = snapshot.data; // String = [{'a' : 'b'}]
+                  var dataList = jsonDecode(d!) as List<dynamic>;
+                  return ListView.separated(
+                    itemBuilder: (context, index) {
+                      var data = dataList[index] as Map<String, dynamic>;
+                      return ListTile(
+                        title: Text(data['title']),
+                        subtitle: Text(data['contents']),
+                        trailing: const Icon(Icons.delete),
+                      );
+                    },
+                    separatorBuilder: (context, index) => const Divider(),
+                    itemCount: dataList.length,
+                  );
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              });
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: const Text('hello'),
+      body: Padding(
+        padding: const EdgeInsets.all(100.0),
+        child: Column(
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                ListView;
+              },
+              child: const Text('조회'),
+            ),
+            Expanded(child: myList),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           var result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddPage(filePath: 'temp'),
+              builder: (context) => AddPage(
+                filePath: filePath,
+              ),
             ),
           );
           print(result);
+          if (result == 'ok') {
+            //결과 출력
+            showList();
+          }
         },
-        child: const Icon(Icons.apple),
+        child: const Icon(Icons.pest_control_outlined),
       ),
     );
   }
