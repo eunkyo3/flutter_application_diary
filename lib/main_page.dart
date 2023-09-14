@@ -138,7 +138,7 @@ class _MainState extends State<Main> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(100.0),
+        padding: const EdgeInsets.all(50.0),
         child: Column(
           children: [
             Row(
@@ -149,6 +149,17 @@ class _MainState extends State<Main> {
                     ListView;
                   },
                   child: const Text('조회'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final selectedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2023),
+                      lastDate: DateTime.now(),
+                    ).then((value) => {});
+                  },
+                  child: const Icon(Icons.date_range),
                 ),
                 ElevatedButton(
                   onPressed: () {
