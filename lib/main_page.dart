@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'add_page.dart';
 import 'dir_page.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -17,6 +18,15 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      // 자신에게 필요한 언어 locale을 모두 추가
+      supportedLocales: [
+        Locale('ko'), // 한국어
+      ],
       debugShowCheckedModeBanner: false,
       home: Main(),
     );
@@ -35,11 +45,11 @@ class Main extends StatefulWidget {
 class _MainState extends State<Main> {
   Directory? directory;
   String filePath = '';
-  late String fileName = 'diary.json';
+  late String fileName = '7';
 
   dynamic myList = const Text(
     '파일을 생성해 주세요!',
-    style: TextStyle(fontSize: 100),
+    style: TextStyle(fontSize: 30),
   );
 
   @override
@@ -74,7 +84,7 @@ class _MainState extends State<Main> {
                 if (dataList.isEmpty) {
                   return const Text(
                     '내용이 없습니다!',
-                    style: TextStyle(fontSize: 50),
+                    style: TextStyle(fontSize: 30),
                   );
                 }
 
@@ -101,9 +111,11 @@ class _MainState extends State<Main> {
         });
       } else {
         setState(() {
-          myList = const Text(
-            '파일이 없습니다!',
-            style: TextStyle(fontSize: 50),
+          myList = Center(
+            child: const Text(
+              '파일이 없습니다!',
+              style: TextStyle(fontSize: 30),
+            ),
           );
         });
       }
@@ -167,7 +179,7 @@ class _MainState extends State<Main> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('File Name : $fileName'),
+        title: Text('$fileName'),
       ),
       body: SizedBox(
         width: double.infinity,
@@ -176,10 +188,12 @@ class _MainState extends State<Main> {
           IconButton(
               onPressed: () async {
                 var dt = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2023),
-                    lastDate: DateTime.now());
+                  locale: const Locale('ko', 'KR'),
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2023),
+                  lastDate: DateTime.now(),
+                );
                 if (dt != null) {
                   setState(() {
                     fileName = '${dt.toString().split(' ')[0]}.json';
@@ -191,7 +205,7 @@ class _MainState extends State<Main> {
               },
               icon: const Icon(Icons.calendar_month)),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(onPressed: showList, child: const Text('조회')),
               ElevatedButton(onPressed: showFileList, child: const Text('목록')),
